@@ -74,3 +74,31 @@ def delete_employee(employee_id: int,
     db.commit()
 
     return {"message": "Employee deleted"}
+
+@app.put("/employees/{employee_id}",
+         response_model=EmployeeResponse)
+def update_employee(
+        employee_id: int,
+        updated_employee: EmployeeCreate,
+        db: Session = Depends(get_db)
+):
+
+    employee = db.query(Employee).filter(
+        Employee.id == employee_id
+    ).first()
+
+    if not employee:
+        raise HTTPException(
+            status_code=404,
+            detail="Employee not found"
+        )
+
+    employee.name = updated_employee.name
+    employee.email = updated_employee.email
+    employee.department = updated_employee.department
+    employee.salary = updated_employee.salary
+
+    db.commit()
+    db.refresh(employee)
+
+    return employee
